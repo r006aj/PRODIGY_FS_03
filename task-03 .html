@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>e-Shop</title>
+  <style>
+    :root {
+      --bg: #f5f5f5;
+      --text: #000;
+      --card: #fff;
+      --primary: #007bff;
+    }
+    body.dark {
+      --bg: #121212;
+      --text: #fff;
+      --card: #1e1e1e;
+      --primary: #0d6efd;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      transition: 0.3s;
+    }
+    header {
+      background: var(--primary);
+      color: white;
+      padding: 20px;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 999;
+    }
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      padding: 10px 20px;
+      background: var(--card);
+    }
+    .top-bar input {
+      padding: 8px;
+      width: 200px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    .top-bar select {
+      margin-left: 10px;
+    }
+    .dark-toggle {
+      display: flex;
+      align-items: center;
+      margin-left: 10px;
+    }
+    .dark-toggle label {
+      margin-right: 5px;
+      font-size: 14px;
+    }
+    .dark-toggle input[type="checkbox"] {
+      width: 40px;
+      height: 20px;
+      appearance: none;
+      background: #ccc;
+      border-radius: 20px;
+      position: relative;
+      outline: none;
+      cursor: pointer;
+    }
+    .dark-toggle input[type="checkbox"]::before {
+      content: "";
+      width: 18px;
+      height: 18px;
+      background: white;
+      border-radius: 50%;
+      position: absolute;
+      top: 1px;
+      left: 1px;
+      transition: 0.3s;
+    }
+    .dark-toggle input[type="checkbox"]:checked {
+      background: #0d6efd;
+    }
+    .dark-toggle input[type="checkbox"]:checked::before {
+      transform: translateX(20px);
+    }
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      padding: 20px;
+      gap: 20px;
+      justify-content: center;
+    }
+    .product {
+      background: var(--card);
+      width: 250px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: 0.3s;
+    }
+    .product img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+    }
+    .product .info {
+      padding: 15px;
+      flex: 1;
+    }
+    .product h3 {
+      margin: 0 0 10px;
+    }
+    .product .price {
+      font-weight: bold;
+      margin: 10px 0;
+    }
+    .product .reviews {
+      font-size: 13px;
+      color: #777;
+    }
+    .product button {
+      padding: 10px;
+      border: none;
+      background: var(--primary);
+      color: white;
+      cursor: pointer;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+    .cart {
+      position: fixed;
+      right: 0;
+      top: 0;
+      width: 300px;
+      height: 100%;
+      background: var(--card);
+      box-shadow: -2px 0 10px rgba(0,0,0,0.2);
+      padding: 20px;
+      overflow-y: auto;
+      transition: 0.3s;
+    }
+    .cart.hidden {
+      transform: translateX(100%);
+    }
+    .cart-item {
+      border-bottom: 1px solid #ccc;
+      padding: 10px 0;
+    }
+    .remove-btn {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      font-size: 12px;
+      cursor: pointer;
+      border-radius: 3px;
+    }
+    .total, .buy-btn {
+      margin-top: 20px;
+    }
+    .buy-btn {
+      background: #28a745;
+      border: none;
+      color: white;
+      padding: 10px;
+      width: 100%;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .cart-toggle-btn {
+      position: fixed;
+      right: 10px;
+      top: 10px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 8px 10px;
+      font-size: 16px;
+      border-radius: 50%;
+      z-index: 1001;
+      cursor: pointer;
+    }
+    @media(max-width: 768px) {
+      .cart {
+        position: static;
+        width: 100%;
+        height: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🛍️ e-Shop</h1>
+    <p>Everything you need in one place</p>
+  </header>
+
+  <div class="top-bar">
+    <input type="text" id="searchBar" placeholder="Search products...">
+    <select id="categoryFilter">
+      <option value="all">All Categories</option>
+      <option value="electronics">Electronics</option>
+      <option value="fashion">Fashion</option>
+      <option value="grocery">Grocery</option>
+      <option value="books">Books</option>
+    </select>
+    <div class="dark-toggle">
+      <label for="themeSwitch">🌓</label>
+      <input type="checkbox" id="themeSwitch" onchange="toggleTheme()">
+    </div>
+  </div>
+
+  <div class="container" id="product-container"></div>
+
+  <button class="cart-toggle-btn" onclick="toggleCart()">🞬</button>
+
+  <div class="cart" id="cart">
+    <h3>🛒 Your Cart</h3>
+    <div id="cart-items"></div>
+    <div class="total" id="cart-total">Total: ₹0</div>
+    <button class="buy-btn" onclick="buyNow()">Buy Now</button>
+  </div>
+
+  <script>
+    const products = [
+      { id: 1, name: "Wireless Headphones", category: "electronics", description: "Noise-cancelling headphones.", price: 1999, image: "https://via.placeholder.com/250x200?text=Headphones", reviews: "4.5★ (123)" },
+      { id: 2, name: "Cotton T-Shirt", category: "fashion", description: "Comfortable summer wear.", price: 499, image: "https://via.placeholder.com/250x200?text=T-Shirt", reviews: "4.0★ (87)" },
+      { id: 3, name: "Organic Honey", category: "grocery", description: "Pure and natural honey.", price: 299, image: "https://via.placeholder.com/250x200?text=Honey", reviews: "4.8★ (142)" },
+      { id: 4, name: "The Time Loop", category: "books", description: "Sci-fi thriller novel.", price: 399, image: "https://via.placeholder.com/250x200?text=Book", reviews: "4.2★ (52)" },
+      { id: 5, name: "Smartphone Stand", category: "electronics", description: "Adjustable desk stand.", price: 199, image: "https://via.placeholder.com/250x200?text=Stand", reviews: "4.7★ (64)" },
+      { id: 6, name: "Steel Water Bottle", category: "grocery", description: "Keeps drinks hot/cold.", price: 649, image: "https://via.placeholder.com/250x200?text=Bottle", reviews: "4.6★ (35)" }
+    ];
+
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+    function renderProducts() {
+      const container = document.getElementById('product-container');
+      const searchTerm = document.getElementById('searchBar').value.toLowerCase();
+      const selectedCategory = document.getElementById('categoryFilter').value;
+      container.innerHTML = '';
+      products.filter(p => {
+        const matchSearch = p.name.toLowerCase().includes(searchTerm);
+        const matchCategory = selectedCategory === 'all' || p.category === selectedCategory;
+        return matchSearch && matchCategory;
+      }).forEach(product => {
+        const div = document.createElement('div');
+        div.className = 'product';
+        div.innerHTML = `
+          <img src="${product.image}" alt="${product.name}">
+          <div class="info">
+            <h3>${product.name}</h3>
+            <div class="price">₹${product.price}</div>
+            <p>${product.description}</p>
+            <div class="reviews">${product.reviews}</div>
+            <button onclick="addToCart(${product.id})">Add to Cart</button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function addToCart(id) {
+      const product = products.find(p => p.id === id);
+      const existing = cart.find(item => item.id === id);
+      if (existing) existing.quantity += 1;
+      else cart.push({ ...product, quantity: 1 });
+      saveCart();
+      renderCart();
+    }
+
+    function removeFromCart(id) {
+      cart = cart.filter(item => item.id !== id);
+      saveCart();
+      renderCart();
+    }
+
+    function saveCart() {
+      localStorage.setItem('cart', JSON.stringify(cart));
+    }
+
+    function renderCart() {
+      const cartItems = document.getElementById('cart-items');
+      const cartTotal = document.getElementById('cart-total');
+      cartItems.innerHTML = '';
+      let total = 0;
+      cart.forEach(item => {
+        total += item.price * item.quantity;
+        const div = document.createElement('div');
+        div.className = 'cart-item';
+        div.innerHTML = `
+          <strong>${item.name}</strong><br>
+          Qty: ${item.quantity} × ₹${item.price}<br>
+          <button class="remove-btn" onclick="removeFromCart(${item.id})">Remove</button>
+        `;
+        cartItems.appendChild(div);
+      });
+      cartTotal.textContent = `Total: ₹${total}`;
+    }
+
+    function buyNow() {
+      if (cart.length === 0) return alert("Your cart is empty.");
+      const orderId = 'ORD' + Math.floor(Math.random() * 1000000);
+      alert(`Thank you for your purchase!\nYour Order ID is ${orderId}`);
+      cart = [];
+      saveCart();
+      renderCart();
+    }
+
+    function toggleTheme() {
+      const isDark = document.getElementById("themeSwitch").checked;
+      document.body.classList.toggle('dark', isDark);
+      localStorage.setItem("theme", isDark ? "dark" : "light");
+    }
+
+    function toggleCart() {
+      const cartBox = document.getElementById('cart');
+      const btn = document.querySelector('.cart-toggle-btn');
+      cartBox.classList.toggle('hidden');
+      btn.textContent = cartBox.classList.contains('hidden') ? '🛒' : '🞬';
+    }
+
+    window.onload = () => {
+      const theme = localStorage.getItem("theme") || "light";
+      if (theme === "dark") {
+        document.body.classList.add("dark");
+        document.getElementById("themeSwitch").checked = true;
+      }
+      renderProducts();
+      renderCart();
+    };
+  </script>
+</body>
+</html>
